@@ -32,7 +32,7 @@ public class METOD_PUZIRYA<stackTraceElements> {
             //Выведенные слова должны быть отсортированы в алфавитном порядке.
 
             System.out.print(Thread.currentThread().getStackTrace()[2].getMethodName()); // печать метода, который вызвал этот метод
-
+            System.out.print(Thread.currentThread().getStackTrace()[2].getLineNumber()); //номер строки кода, откуда вызван метод
 
             ArrayList<String> list = new ArrayList<String>(Arrays.asList(array));        //список по изначальному массиву
             ArrayList<String> list1 = new ArrayList<String>();                            //второй список - новая сортировка
