@@ -5,7 +5,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class METOD_PUZIRYA {
+public class METOD_PUZIRYA<stackTraceElements> {
 
 
 /*
@@ -31,7 +31,7 @@ public class METOD_PUZIRYA {
             // Метод sort() должен вызывать метод isGreaterThan().
             //Выведенные слова должны быть отсортированы в алфавитном порядке.
 
-
+            System.out.print(Thread.currentThread().getStackTrace()[2].getMethodName()); // печать метода, который вызвал этот метод
 
 
             ArrayList<String> list = new ArrayList<String>(Arrays.asList(array));        //список по изначальному массиву
@@ -57,11 +57,13 @@ public class METOD_PUZIRYA {
             for (int i=0;i<array.length;i++){
                 array[i]=list1.get(i);
             }
+
         }
 
         //Метод для сравнения строк: 'а' больше чем 'b'
         public static boolean isGreaterThan(String a, String b) {
             return a.compareTo(b) > 0;
         }
+
     }
 
