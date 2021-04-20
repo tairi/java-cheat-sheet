@@ -1,130 +1,103 @@
-package com.javarush.task.task20.task2027;
-
-import java.util.ArrayList;
-import java.util.List;
+package com.javarush.task.task20.task2026;
 
 /* 
-Кроссворд
-1. Дан двумерный массив, который содержит буквы английского алфавита в нижнем регистре.
-2. Метод detectAllWords должен найти все слова из words в массиве crossword.
-3. Элемент(startX, startY) должен соответствовать первой букве слова, элемент(endX, endY) - последней.
-text - это само слово, располагается между начальным и конечным элементами
-4. Все слова есть в массиве.
-5. Слова могут быть расположены горизонтально, вертикально и по диагонали как в нормальном, так и в обратном порядке.
-6. Метод main не участвует в тестировании.
-
-
-Требования:
-1. В классе Solution должен существовать метод detectAllWords.
-2. В классе Solution должен существовать статический класс Word.
-3. Класс Solution не должен содержать статические поля.
-4. Метод detectAllWords должен быть статическим.
-5. Метод detectAllWords должен быть публичным.
-6. Метод detectAllWords должен возвращать список всех слов в кроссворде (согласно условию задачи).
+Алгоритмы-прямоугольники
+4. В массиве:
+4.1) a[i, j] = 1, если элемент (i, j) принадлежит какому-либо прямоугольнику
+4.2) a[i, j] = 0, в противном случае
+5. getRectangleCount должен возвращать количество прямоугольников.
 */
 
 public class Solution {
     public static void main(String[] args) {
-        int[][] crossword = new int[][]{
-                {'f', 'd', 'e', 'r', 'l', 'k'},
-                {'u', 's', 'a', 'm', 'e', 'o'},
-                {'l', 'n', 'g', 'r', 'o', 'v'},
-                {'m', 'l', 'p', 'r', 'r', 'h'},
-                {'p', 'o', 'e', 'e', 'j', 'j'}
+        byte[][] a1 = new byte[][]{
+                {1, 1, 0, 0},
+                {1, 1, 0, 0},
+                {1, 1, 0, 0},
+                {1, 1, 0, 1}
         };
-        detectAllWords(crossword, "home", "same");
-        /*
-Ожидаемый результат
-home - (5, 3) - (2, 0)
-same - (1, 1) - (4, 1)
-         */
+        byte[][] a2 = new byte[][]{
+                {1, 0, 0, 1},
+                {0, 0, 0, 0},
+                {0, 0, 0, 0},
+                {1, 0, 0, 1}
+        };
+
+        int count1 = getRectangleCount(a1);
+        System.out.println("count = " + count1 + ". Должно быть 2");
+        int count2 = getRectangleCount(a2);
+        System.out.println("count = " + count2 + ". Должно быть 4");
     }
 
-    public static List<Word> detectAllWords(int[][] crossword, String... words) {
-        List<Word> wordList = new ArrayList<>();
-        int hor = crossword[0].length; //определили размер массива горизонталь
-        int ver = crossword.length; //определили размер массива вертикаль
-
-        for (String word : words) { //взяли слово из списка
-            wordList.add(detectedWorld(crossword, word)); //добавили в список слово из кроссворда
-        }
-
-        return wordList;
-    }
-
-    public static Word detectedWorld (int[][] crossword, String word) {  //пишем сам поиск слова
-        String[] symbols = word.split(""); //разбили слово на символы
-        //1. поиск первого символа
-        for (int i = 0; i < crossword.length; i++) {
-            for (int j = 0; j < crossword[i].length; j++) {
-                int symbol = crossword[i][j];
-                if (symbols[0].charAt(0) == symbol) { // если i j символ равен первому символу слова...
-                    //запоминаем начальные координаты
-                    int x1 = j;
-                    int y1 = i;
-                    //ищем слово
-                    Word fundedWord = null;
-                    int[] route = new int[]{1, 0, -1};
-                    for (int k = 0; k < route.length; k++) {
-                        for (int l = 0; l < route.length; l++) {
-                            fundedWord = seekWorld(crossword, word, x1, y1, route[k], route[l]);
-                            if (fundedWord != null) 
-                                return fundedWord;
-                        }
-                    }
-                }
+    public static int getRectangleCount(byte[][] arr) {
+        byte[][] a = new byte[arr.length][arr[0].length];
+        for (int i =0; i<a.length;i++){
+            for (int j =0; j<a.length; j++){
+                a[i][j] = arr[i][j];
             }
         }
 
-        return null;
-    }
+        int hor = a[0].length;
+        int ver = a.length;
+        int count;
+        int verEnd;
+        int horEnd;
+        int result = 0;
 
-    private static Word seekWorld(int[][] crossword, String word, int x1, int y1, int deltax, int deltay) {
-        Word fundedWord = new Word(word);
-        fundedWord.setStartPoint(x1, y1);
-        //2.Поиск символов от отправной точки
-        String[] symbols = word.split("");
-        boolean wordFound = false;
-        for (String symbol : symbols) {
-            //Проверка не выхода за границу
-            if (!(y1 >= 0 && crossword.length > y1)) return null;
-            if (!(x1 >= 0 && crossword[y1].length > x1)) return null;
-
-            if ((int) symbol.charAt(0) == crossword[y1][x1]) {
-                x1 += deltax;
-                y1 += deltay;
-            } else return null;
+        for (int i = 0; i < ver; i++) {
+            for (int j = 0; j < hor; j++) {
+                if (a[i][j] == 1) {
+                    verEnd = i;
+                    horEnd = j;
+                    //по вертикали
+                    count = i + 1;
+                    System.out.println("a[" + count + "][" + j + "]");
+                    while (true) {
+                        if (count >= ver || (a[count][j] == 0 && count < ver)) {
+                            verEnd = count - 1;
+                            System.out.println("verEnd = " + verEnd);
+                            break;
+                        }
+                        count++;
+                        System.out.println("a[" + count + "][" + j + "]");
+                    }
+                    //по горизонтали
+                    count = j + 1;
+                    while (true) {
+                        if (count >= hor || (a[i][count] == 0 && count < hor)) {
+                            horEnd = count - 1;
+                            System.out.println("horEnd = " + horEnd);
+                            break;
+                        }
+                        count++;
+                    }
+                    boolean flag = true;
+                    for (int p = i; p <= verEnd; p++)
+                        for (int q = j; q <= horEnd; q++)
+                            if (a[p][q] != 1) {
+                                flag = false;
+                                break;
+                            }
+                    if (flag) {
+                        System.out.println("startI = " + i);
+                        System.out.println("startJ = " + j);
+                        System.out.println("endI = " + verEnd);
+                        System.out.println("endJ = " + horEnd);
+                        for (int p = i; p <= verEnd; p++)
+                            for (int q = j; q <= horEnd; q++)
+                                a[p][q] = 0;
+                        result++;
+                    }
+                    System.out.println();
+                }
+            }
         }
-        fundedWord.setEndPoint(x1 - deltax, y1 -deltay);//костыль
-        return fundedWord;
-
-    }
-
-    public static class Word {
-        private String text;
-        private int startX;
-        private int startY;
-        private int endX;
-        private int endY;
-
-        public Word(String text) {
-            this.text = text;
-        }
-
-        public void setStartPoint(int i, int j) {
-            startX = i;
-            startY = j;
-        }
-
-        public void setEndPoint(int i, int j) {
-            endX = i;
-            endY = j;
-        }
-
-        @Override
-        public String toString() {
-
-            return String.format("%s - (%d, %d) - (%d, %d)", text, startX, startY, endX, endY);
-        }
+        return result;
     }
 }
+
+/*1. В классе Solution должен существовать метод getRectangleCount с одним параметром типа byte[][].
+2. Метод getRectangleCount должен быть публичным.
+3. Метод getRectangleCount должен быть статическим.
+4. Метод getRectangleCount должен возвращать количество
+прямоугольников (в соответствии с заданием) найденное в полученном массиве.*/
