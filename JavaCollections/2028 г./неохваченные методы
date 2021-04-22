@@ -1,0 +1,426 @@
+/**
+     * Метод indexOf() возвращает индекс элемента в коллекции, или -1 если такого элемента нет.
+     *
+     * @param o искомый элемент
+     * @return индекс элемента в коллекции
+     */
+    @Override
+    public int indexOf(Object o) {
+        String string = String.valueOf(o);
+        setValidCollection();
+        for (Entry<String> entry : queue) {
+            if (entry.elementName.equals(string)) {
+                return queue.indexOf(entry);
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Метод lastIndexOf() возвращает индекс элемента в коллекции, или -1 если такого элемента нет.
+     *
+     * @param o искомый элемент
+     * @return индекс элемента в коллекции
+     */
+    @Override
+    public int lastIndexOf(Object o) {
+        String string = String.valueOf(o);
+        setValidCollection();
+        Entry<String> element = null;
+        for (Entry<String> entry : queue) {
+            if (entry.elementName.equals(string)) {
+                element = entry;
+            }
+        }
+        return queue.lastIndexOf(element);
+    }
+
+@Override
+    public void add(int index, String element) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Метод toArray возвращает массив elementName текущих элементов коллекции.
+     *
+     * @return массив строк elementName;
+     */
+    @Override
+    public String[] toArray() {
+        setValidCollection();
+        int size = size();
+        String[] array = new String[size];
+        for (int i = 0; i < size; i++) {
+            array[i] = queue.get(i).elementName;
+        }
+        return array;
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        int size = size();
+        T[] array = a.length >= size ? a : (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);
+        Iterator<String> iterator = iterator();
+        for (int i = 0; i < array.length; i++) {
+            if (!iterator.hasNext()) { // fewer elements than expected
+                if (a != array) {
+                    return Arrays.copyOf(array, i);
+                }
+                array[i] = null; // null-terminate
+                return array;
+            }
+            array[i] = (T) iterator.next();
+        }
+        return array;
+    }
+
+    /**
+     * Метод changeNewLineRootElement меняет boolean флаг newLineRootElement e элементов, подлежащих удалению.
+     * Новый элемент ищется по принципу: если остались элементы справа, то выбирается соседний, если не осталось,
+     * то поднимаемся на уровень выше и ищем там самый левый.
+     *
+     * @param entry   Entry<String> текущий элемент являющийся newLineRootElement;
+     * @param delList список элементов коллекции Entry<String> подлежащий удалению;
+     */
+     
+         /**
+     * Доп. метод для подстраховки. При удалении иногда получается 2 элемента newLineRootElement;
+     * Этот метод собирает вертикально все такие элементы и снимает флаги newLineRootElement;
+     *
+     * @param entry Entry<String> со значением true переменной newLineRootElement, которая подлежит
+     *              изменению;
+     * @return список начиная с Entry<String> entry и заканчивая всеми его parent со значением true
+     * переменной newLineRootElement, которая подлежит изменению;
+     */
+    private List<Entry<String>> getNewLineRootElementsCollection(Entry<String> entry) {
+        ArrayList<Entry<String>> list = new ArrayList<>();
+        list.add(entry);
+        if ((entry.parent != null) && (entry.parent.newLineRootElement)) {
+            list.addAll(getNewLineRootElementsCollection(entry.parent));
+        }
+        return list;
+    }
+
+
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        setValidCollection();
+        for (Object o : c) {
+            if (!contains(o)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+     /**
+     * This implementation iterates over this collection, checking each
+     * element returned by the iterator in turn to see if it's contained
+     * in the specified collection.  If it's not so contained, it's removed
+     * from this collection with the iterator's <tt>remove</tt> method.
+     *
+     * @param c Коллекция элементы которой будут оставлены в текущей коллекции.
+     * @return true если текущая коллекция подверглась изменению, иначе false
+     */
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        setValidCollection();
+        boolean modified = false;
+        Iterator<String> iterator = iterator();
+        while (iterator.hasNext()) {
+            if (!c.contains(iterator.next())) {
+                iterator.remove();
+                modified = true;
+            }
+        }
+        return modified;
+    }
+
+    /**
+     * This implementation iterates over the specified collection, and adds
+     * each object returned by the iterator to this collection, in turn.
+     *
+     * @param collection Элементы для добавления
+     * @return true если коллекция изменилась
+     */
+    @Override
+    public boolean addAll(Collection<? extends String> collection) {
+        boolean modified = false;
+        for (String line : collection) {
+            if (add(line)) {
+                modified = true;
+            }
+        }
+        return modified;
+    }
+
+
+    /**
+     * @return true, если коллекция пуста;
+     */
+    @Override
+    public boolean isEmpty() {
+        setValidCollection();
+        return size() == 0;
+    }
+
+    @Override
+    public List<String> subList(int fromIndex, int toIndex) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void removeRange(int fromIndex, int toIndex) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Removes all of the elements from this list (optional operation).
+     * The list will be empty after this call returns.
+     */
+    @Override
+    public void clear() {
+        root.newLineRootElement = true;
+        root.availableToAddLeftChildren = true;
+        root.availableToAddRightChildren = true;
+        root.leftChild = null;
+        root.rightChild = null;
+        setValidCollection();
+    }
+
+    /**
+     * @param o объект для поиска (Строка);
+     * @return true если в дереве найден элемент Entry<String> со значением параметра elementName
+     * эквивалентным значению о; В противном случае возвращает false;
+     */
+    @Override
+    public boolean contains(Object o) {
+        return indexOf(o) != -1;
+    }
+
+
+    /**
+     * Creates and returns a copy of this object.  The precise meaning
+     * of "copy" may depend on the class of the object.
+     *
+     * @return a clone of this instance.
+     * @throws CloneNotSupportedException if the object's class does not
+     *                                    support the {@code Cloneable} interface. Subclasses
+     *                                    that override the {@code clone} method can also
+     *                                    throw this exception to indicate that an instance cannot
+     *                                    be cloned.
+     */
+    @Override
+    protected CustomTree clone() throws CloneNotSupportedException {
+        CustomTree customTree = (CustomTree) super.clone();
+        return customTree;
+    }
+
+    /**
+     * Реализация equals для тестов;
+     *
+     * @param o another object
+     * @return true if objects equals
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        CustomTree customTree = (CustomTree) o;
+        this.setValidCollection();
+        customTree.setValidCollection();
+        int size = size();
+        for (int i = 0; i < size; i++) {
+            Entry first = queue.get(i);
+            Entry second = customTree.queue.get(i);
+            if (!first.equals(second)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Реализация hashCode для тестов;
+     *
+     * @return hashCode объекта
+     */
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (queue != null ? queue.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        setValidCollection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        for (int i = 0; i < queue.size(); i++) {
+            builder.append(queue.get(i).elementName);
+            if (i < queue.size() - 1) {
+                builder.append(", ");
+            }
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+    }
+
+    /**
+     * Метод возвращает лист-итератор для коллекции элементов;
+     *
+     * @return new SolutionListIterator;
+     */
+    @Override
+    public ListIterator<String> listIterator() {
+        return new SolutionListIterator(0);
+    }
+
+    /**
+     * Метод возвращает лист-итератор для прохода по коллекции элементов, начиная с индекса index;
+     *
+     * @param index - начальный индекс для прохода по коллекции.
+     * @return new SolutionListIterator;
+     */
+    @Override
+    public ListIterator<String> listIterator(int index) {
+        checkElementIndex(index);
+        return new SolutionListIterator(index);
+    }
+
+    /**
+     * Проверка индекса на валидность
+     *
+     * @param index индекс элемента
+     * @return true если индекс находится в приделах нашей коллекции.
+     */
+    private boolean checkIndex(int index) {
+        return index >= 0 && index < size();
+    }
+
+    /**
+     * Если индекс элемента меньше 0 или больше размера коллекции выбросит исключение
+     *
+     * @param index индекс элемента
+     */
+    private void checkElementIndex(int index) {
+        if (!checkIndex(index)) {
+            throw new IndexOutOfBoundsException("List size: " + queue.size() + ", Index: " + index);
+        }
+    }
+
+    /**
+     * Метод возвращает итератор для коллекции элементов;
+     *
+     * @return new SolutionListIterator;
+     */
+    @Override
+    public Iterator<String> iterator() {
+        return new SolutionIterator();
+    }
+
+    private class SolutionIterator implements Iterator<String> {
+        volatile ArrayList<Entry<String>> list;
+        volatile int index, lastReturned = -1; // lastReturned - индекс последнего возвращенного элемента, -1 если такого элемента нет.
+
+        SolutionIterator() {
+            setValidCollection();
+            list = queue;
+        }
+
+        @Override
+        public synchronized boolean hasNext() {
+            return index != list.size();
+        }
+
+        @Override
+        public synchronized String next() {
+            int i = index;
+            if (i >= size()) {
+                throw new NoSuchElementException();
+            }
+            index = i + 1;
+            return list.get(lastReturned = i).elementName;
+        }
+
+        @Override
+        public synchronized void remove() {
+            if (lastReturned < 0) {
+                throw new IllegalStateException();
+            }
+            if (!hasNext()) {
+                throw new IndexOutOfBoundsException("List size: " + list.size() + ", Index: " + index);
+            }
+            CustomTree.this.remove(list.get(lastReturned).elementName);
+            index = lastReturned;
+            lastReturned = -1;
+            list = queue;
+        }
+    }
+
+    private class SolutionListIterator extends SolutionIterator implements ListIterator<String> {
+
+        SolutionListIterator(int index) {
+            super();
+            this.index = index;
+        }
+
+        @Override
+        public synchronized boolean hasPrevious() {
+            return index != 0;
+        }
+
+        @Override
+        public synchronized String previous() {
+            int i = index - 1;
+            if (i < 0) {
+                throw new NoSuchElementException("List size: " + list.size() + ", Index: " + i);
+            }
+            if (i >= list.size()) {
+                throw new IllegalStateException();
+            }
+            index = i;
+            return list.get(lastReturned = i).elementName;
+        }
+
+        @Override
+        public synchronized int nextIndex() {
+            return index;
+        }
+
+        @Override
+        public synchronized int previousIndex() {
+            return index - 1;
+        }
+
+        @Override
+        public synchronized void set(String s) {
+            if (lastReturned < 0) {
+                throw new IllegalStateException();
+            }
+            for (Entry<String> entry : queue) {
+                if (entry.equals(list.get(lastReturned))) {
+                    entry.elementName = s;
+                }
+            }
+        }
+
+        @Override
+        public synchronized void add(String s) {
+            CustomTree.this.add(s);
+            list = queue;
+        }
+    }
+
