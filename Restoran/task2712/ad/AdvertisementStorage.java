@@ -23,6 +23,7 @@ public class AdvertisementStorage {
         videos.add(new Advertisement(someContent, "Second Video", 100, 10, 15 * 60)); //15 min
         videos.add(new Advertisement(someContent, "Third Video", 400, 2, 10 * 60)); //10 min
 
+        //вот это нововведение
         videos.sort((o1, o2) -> {
             long l = o2.getAmountPerOneDispleyingThousandKopecks() - o1.getAmountPerOneDispleyingThousandKopecks(); //сортировка по времени по увеличению стоимости показа одной секунды рекламного ролика в копейках
             return (int) (l != 0 ? l : o2.getDuration() - o1.getDuration());  //сортировка по длительности ролика по увеличению
