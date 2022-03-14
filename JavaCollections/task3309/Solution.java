@@ -1,15 +1,18 @@
 package com.javarush.task.task33.task3309;
 
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import com.sun.org.apache.xerces.internal.impl.PropertyManager;
-import com.sun.xml.internal.stream.writers.XMLStreamWriterImpl;
 import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter;
 
 
@@ -19,15 +22,16 @@ import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter;
 */
 
 public class Solution {
-    public static String toXmlWithComment(Object obj, String tagName, String comment) throws JAXBException, IOException {
+    public static String toXmlWithComment(Object obj, String tagName, String comment) throws JAXBException, XMLStreamException {
         JAXBContext context = JAXBContext.newInstance(obj.getClass());
         Marshaller marshaller = context.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.FALSE);
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         // самосериализация
-        StringWriter writer = new StringWriter();
+        XMLOutputFactory writerfactory = XMLOutputFactory.newInstance();
+        OutputStream os = new ByteArrayOutputStream();
+        XMLStreamWriter xsw = writerfactory.createXMLStreamWriter(os);
         XMLStreamWriter xmlStreamWriter =
-                new IndentingXMLStreamWriter(
-                        new XMLStreamWriterImpl(writer, new PropertyManager(PropertyManager.CONTEXT_READER))) {
+                new IndentingXMLStreamWriter(xsw) {
                     @Override
                     public void writeStartElement(String localName) throws XMLStreamException {
                         insertCommentIfNeeded(localName);
@@ -66,16 +70,27 @@ public class Solution {
 
                     private void insertCommentIfNeeded(String localName) throws XMLStreamException {
                         if (tagName.equalsIgnoreCase(localName)) {
+                            writeCharacters(System.lineSeparator());
                             writeComment(comment);
                         }
                     }
                 };
         marshaller.marshal(obj, xmlStreamWriter);
-        return writer.toString();
+        return os.toString();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        AnExample obj = new AnExample();
+        System.out.println(toXmlWithComment(obj, "needCDATA", "comment"));
+    }
 
+    @XmlType(name = "anExample")
+    @XmlRootElement
+    public static class AnExample {
+        @XmlElement(name = "needCDATA", type = String.class)
+        public String[] needCDATA = new String[]{"<needCDATA><![CDATA[need CDATA because of < <>& and >]]></needCDATA>", ""};
+
+        public List<String> characters = new ArrayList<>();
     }
 
 }
